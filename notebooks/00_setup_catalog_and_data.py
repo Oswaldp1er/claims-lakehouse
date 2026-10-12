@@ -1,17 +1,17 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 00 · Set up Unity Catalog objects and unpack the synthetic data
+# MAGIC # 00 · Load the synthetic data into the raw volume
 # MAGIC
-# MAGIC Run this once after uploading `claims_lakehouse_data.zip`.
+# MAGIC The schema and volume are **not** created here. They are infrastructure, so they're
+# MAGIC defined in `databricks.yml` and created with `databricks bundle deploy -t dev`.
+# MAGIC This notebook only handles data: it unpacks the uploaded zip.
 # MAGIC
-# MAGIC 1. Creates a schema and a volume in Unity Catalog.
-# MAGIC 2. Unzips the data into `staging/` inside the volume.
-# MAGIC 3. Creates an empty `landing/` folder. This is where payor feed files "arrive";
-# MAGIC    notebook `01_drip_feed` copies them in month by month for Auto Loader to pick up.
+# MAGIC **Before running:**
+# MAGIC 1. Deploy the bundle (creates `<catalog>.<schema>` and the volume `raw`).
+# MAGIC 2. In Catalog Explorer, open the `raw` volume, create a folder named `upload`, and upload
+# MAGIC    `claims_lakehouse_data.zip` there.
 # MAGIC
-# MAGIC **Before running:** in Catalog Explorer, open the volume created by the first cell
-# MAGIC (`<catalog>.<schema>.raw`), create a folder named `upload`, and upload the zip there.
-# MAGIC Run the first two cells, upload the zip, then run the rest.
+# MAGIC Then run all cells. Notebook `01_drip_feed` copies payor files into `landing/` month by month.
 
 # COMMAND ----------
 
@@ -23,14 +23,14 @@ catalog = dbutils.widgets.get("catalog")
 schema = dbutils.widgets.get("schema")
 volume = dbutils.widgets.get("volume")
 vol_path = f"/Volumes/{catalog}/{schema}/{volume}"
-print(vol_path)
 
-# COMMAND ----------
-
-spark.sql(f"CREATE SCHEMA IF NOT EXISTS {catalog}.{schema} COMMENT 'Claims lakehouse practice project (synthetic Synthea data, no PHI)'")
-spark.sql(f"CREATE VOLUME IF NOT EXISTS {catalog}.{schema}.{volume} COMMENT 'Raw files: uploads, staging, and landing zone for payor feeds'")
-dbutils.fs.mkdirs(f"{vol_path}/upload")
-print(f"Ready. Upload claims_lakehouse_data.zip to {vol_path}/upload/ then run the next cells.")
+# Fail fast with a clear message if the bundle hasn't been deployed yet.
+try:
+    volumes = [r.volume_name for r in spark.sql(f"SHOW VOLUMES IN {catalog}.{schema}").collect()]
+except Exception:
+    volumes = []
+assert volume in volumes, f"Volume {catalog}.{schema}.{volume} not found. Run `databricks bundle deploy -t dev` first."
+print(f"Found {vol_path}")
 
 # COMMAND ----------
 

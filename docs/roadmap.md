@@ -4,7 +4,9 @@ Each milestone maps to a week in the 90-day plan. Check items off as they're mer
 
 ## Milestone 0: Setup (Oct 19–25, 2026)
 - [ ] Databricks Free Edition workspace created
-- [ ] Repo created on GitHub and connected to Databricks (Git folder)
+- [x] Repo created on GitHub
+- [ ] Repo connected to Databricks (Git folder)
+- [ ] Databricks CLI installed; bundle deployed (schema + raw volume as code)
 - [ ] Synthetic data uploaded; notebook 00 run successfully
 - [ ] First month delivered with notebook 01
 
