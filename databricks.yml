@@ -25,7 +25,7 @@ targets:
   dev:
     default: true
     workspace:
-      host: https://REPLACE-WITH-YOUR-WORKSPACE-URL   # e.g. https://dbc-1234abcd-5678.cloud.databricks.com
+      profile: claims-dev
 
 resources:
   schemas:

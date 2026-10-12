@@ -38,9 +38,10 @@ Data files are **not committed** (see `.gitignore`). Regenerate them with `data_
 
 Infrastructure is deployed as code; notebooks only handle data.
 
-1. **Install and sign in to the Databricks CLI** (one time):
-   `winget install Databricks.DatabricksCLI`, then `databricks auth login --host <your-workspace-url>`.
-2. **Set your workspace URL** in `databricks.yml` (`targets.dev.workspace.host`).
+1. **Install the Databricks CLI** (one time): `winget install Databricks.DatabricksCLI`
+2. **Create a CLI profile named `claims-dev`** (one time):
+   `databricks auth login --host <your-workspace-url> --profile claims-dev`.
+   The bundle uses this profile, so no workspace URL is stored in the repo.
 3. **Deploy the bundle** from the repo root: `databricks bundle validate`, then `databricks bundle deploy -t dev`.
    This creates the schema `workspace.claims_lakehouse` and the volume `raw`.
 4. **Upload the data:** in Catalog Explorer, upload `claims_lakehouse_data.zip` to `/Volumes/workspace/claims_lakehouse/raw/upload/`.
