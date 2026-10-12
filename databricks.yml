@@ -1,0 +1,43 @@
+# Declarative Automation Bundle (formerly Databricks Asset Bundle) for the claims-lakehouse workload.
+#
+# The bundle owns the Unity Catalog objects that belong to this workload: the schema and the raw
+# volume. Later it will also own the ingestion jobs and pipelines. Platform-level resources
+# (workspace, catalogs, storage credentials, groups, compute policies) belong to the Terraform repo.
+#
+# Commands (run from the repo root):
+#   databricks bundle validate          # check the configuration
+#   databricks bundle deploy -t dev     # create or update the resources below
+#   databricks bundle summary -t dev    # list what's deployed
+#   databricks bundle destroy -t dev    # removes the schema and volume, including their data
+
+bundle:
+  name: claims-lakehouse
+
+variables:
+  catalog:
+    description: Unity Catalog catalog that holds the workload schema
+    default: workspace
+  schema:
+    description: Schema for all claims-lakehouse tables and volumes
+    default: claims_lakehouse
+
+targets:
+  dev:
+    default: true
+    workspace:
+      host: https://REPLACE-WITH-YOUR-WORKSPACE-URL   # e.g. https://dbc-1234abcd-5678.cloud.databricks.com
+
+resources:
+  schemas:
+    claims_lakehouse:
+      catalog_name: ${var.catalog}
+      name: ${var.schema}
+      comment: Claims lakehouse practice project (synthetic Synthea data, no PHI). Managed by bundle.
+
+  volumes:
+    raw:
+      catalog_name: ${var.catalog}
+      schema_name: ${resources.schemas.claims_lakehouse.name}
+      name: raw
+      volume_type: MANAGED
+      comment: Raw files (uploads, staging, landing zone for payor feeds). Managed by bundle.

@@ -36,10 +36,18 @@ Data files are **not committed** (see `.gitignore`). Regenerate them with `data_
 
 ## Setup (Databricks Free Edition)
 
-1. Open `notebooks/00_setup_catalog_and_data.py` in Databricks and run the first two cells. They create the schema `workspace.claims_lakehouse` and the volume `raw`.
-2. In Catalog Explorer, upload `claims_lakehouse_data.zip` to `/Volumes/workspace/claims_lakehouse/raw/upload/`.
-3. Run the rest of notebook 00 to unpack the data into `staging/`.
-4. Run `notebooks/01_drip_feed.py` to deliver the first month of payor files into `landing/`, then run the ingestion pipeline. Repeat to simulate new months arriving.
+Infrastructure is deployed as code; notebooks only handle data.
+
+1. **Install and sign in to the Databricks CLI** (one time):
+   `winget install Databricks.DatabricksCLI`, then `databricks auth login --host <your-workspace-url>`.
+2. **Set your workspace URL** in `databricks.yml` (`targets.dev.workspace.host`).
+3. **Deploy the bundle** from the repo root: `databricks bundle validate`, then `databricks bundle deploy -t dev`.
+   This creates the schema `workspace.claims_lakehouse` and the volume `raw`.
+4. **Upload the data:** in Catalog Explorer, upload `claims_lakehouse_data.zip` to `/Volumes/workspace/claims_lakehouse/raw/upload/`.
+5. **Run `notebooks/00_setup_catalog_and_data.py`** to unpack the data into `staging/`.
+6. **Run `notebooks/01_drip_feed.py`** to deliver the first month of payor files into `landing/`. Repeat to simulate new months arriving.
+
+See [ADR-0001](docs/adr/0001-bundles-for-workload-terraform-for-platform.md) for why workload objects use bundles and platform resources use Terraform.
 
 ## Roadmap
 
@@ -48,7 +56,8 @@ See [docs/roadmap.md](docs/roadmap.md). Architecture decisions are recorded in [
 ## Repo layout
 
 ```
+databricks.yml Bundle: schema, volume (later jobs and pipelines)
 data_gen/      Synthea generation + payor-feed split scripts
-notebooks/     Databricks notebooks (setup, drip feed, ingestion)
+notebooks/     Databricks notebooks (data load, drip feed, ingestion)
 docs/          Roadmap and architecture decision records
 ```
